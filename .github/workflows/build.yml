@@ -1,4 +1,4 @@
-name: Build Asterisk 18 for ARM (Optimized)
+name: Build Asterisk 18 for ARM (Final Optimized)
 
 on:
   push:
@@ -12,32 +12,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Cache APT packages
-        uses: actions/cache@v3
-        with:
-          path: /var/cache/apt
-          key: apt-cache-${{ runner.os }}-${{ hashFiles('**/build.yml') }}
-          restore-keys: |
-            apt-cache-${{ runner.os }}-
-
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential \
-            git wget curl \
-            pkg-config \
+            build-essential git wget curl pkg-config \
             libncurses5-dev libssl-dev libxml2-dev libsqlite3-dev \
             libedit-dev libjansson-dev libuuid-dev \
+            libcurl4-openssl-dev libspeex-dev libspeexdsp-dev \
+            libgsm1-dev libogg-dev libvorbis-dev libnewt-dev \
             gcc-aarch64-linux-gnu g++-aarch64-linux-gnu make
-
-      - name: Cache Asterisk source
-        uses: actions/cache@v3
-        with:
-          path: asterisk-18
-          key: asterisk-18-source-${{ runner.os }}-${{ hashFiles('**/build.yml') }}
-          restore-keys: |
-            asterisk-18-source-${{ runner.os }}-
 
       - name: Clone Asterisk 18 (LTS)
         run: git clone -b 18 https://github.com/asterisk/asterisk asterisk-18
@@ -70,32 +54,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Cache APT packages
-        uses: actions/cache@v3
-        with:
-          path: /var/cache/apt
-          key: apt-cache-${{ runner.os }}-${{ hashFiles('**/build.yml') }}
-          restore-keys: |
-            apt-cache-${{ runner.os }}-
-
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential \
-            git wget curl \
-            pkg-config \
+            build-essential git wget curl pkg-config \
             libncurses5-dev libssl-dev libxml2-dev libsqlite3-dev \
             libedit-dev libjansson-dev libuuid-dev \
+            libcurl4-openssl-dev libspeex-dev libspeexdsp-dev \
+            libgsm1-dev libogg-dev libvorbis-dev libnewt-dev \
             gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf make
-
-      - name: Cache Asterisk source
-        uses: actions/cache@v3
-        with:
-          path: asterisk-18
-          key: asterisk-18-source-${{ runner.os }}-${{ hashFiles('**/build.yml') }}
-          restore-keys: |
-            asterisk-18-source-${{ runner.os }}-
 
       - name: Clone Asterisk 18 (LTS)
         run: git clone -b 18 https://github.com/asterisk/asterisk asterisk-18
