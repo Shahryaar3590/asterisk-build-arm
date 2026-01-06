@@ -1,0 +1,55 @@
+name: Build Asterisk 18 for ARM
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-arm64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Asterisk 18 (LTS)
+        run: git clone -b 18 https://github.com/asterisk/asterisk asterisk-18 && cd asterisk-18
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            git wget curl \
+            libncurses5-dev libssl-dev libxml2-dev libsqlite3-dev uuid-dev \
+            gcc-aarch64-linux-gnu g++-aarch64-linux-gnu make
+
+      - name: Configure for ARM64
+        run: cd asterisk-18 && ./configure --host=aarch64-linux-gnu
+
+      - name: Build ARM64
+        run: cd asterisk-18 && make -j\$(nproc)
+
+      - name: Package ARM64
+        run: cd asterisk-18 && tar czf asterisk-18-arm64.tar.gz ./asterisk
+
+  build-armhf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Asterisk 18 (LTS)
+        run: git clone -b 18 https://github.com/asterisk/asterisk asterisk-18 && cd asterisk-18
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            git wget curl \
+            libncurses5-dev libssl-dev libxml2-dev libsqlite3-dev uuid-dev \
+            gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf make
+
+      - name: Configure for ARMv7 (armhf)
+        run: cd asterisk-18 && ./configure --host=arm-linux-gnueabihf
+
+      - name: Build ARMv7
+        run: cd asterisk-18 && make -j\$(nproc)
+
+      - name: Package ARMv7
+        run: cd asterisk-18 && tar czf asterisk-18-armhf.tar.gz ./asterisk
