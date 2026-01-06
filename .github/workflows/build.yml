@@ -20,7 +20,7 @@ jobs:
             git wget curl \
             pkg-config \
             libncurses5-dev libssl-dev libxml2-dev libsqlite3-dev \
-            libedit-dev libjansson-dev uuid-dev \
+            libedit-dev libjansson-dev libuuid-dev \
             gcc-aarch64-linux-gnu g++-aarch64-linux-gnu make
 
       - name: Configure for ARM64
@@ -46,7 +46,7 @@ jobs:
             git wget curl \
             pkg-config \
             libncurses5-dev libssl-dev libxml2-dev libsqlite3-dev \
-            libedit-dev libjansson-dev uuid-dev \
+            libedit-dev libjansson-dev libuuid-dev \
             gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf make
 
       - name: Configure for ARMv7 (armhf)
