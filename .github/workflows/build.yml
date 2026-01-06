@@ -1,4 +1,4 @@
-name: Build Asterisk 18 for ARM
+name: Build Asterisk 18 for ARM (Optimized)
 
 on:
   push:
@@ -9,8 +9,16 @@ jobs:
   build-arm64:
     runs-on: ubuntu-latest
     steps:
-      - name: Clone Asterisk 18 (LTS)
-        run: git clone -b 18 https://github.com/asterisk/asterisk asterisk-18 && cd asterisk-18
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Cache APT packages
+        uses: actions/cache@v3
+        with:
+          path: /var/cache/apt
+          key: apt-cache-${{ runner.os }}-${{ hashFiles('**/build.yml') }}
+          restore-keys: |
+            apt-cache-${{ runner.os }}-
 
       - name: Install dependencies
         run: |
@@ -23,20 +31,52 @@ jobs:
             libedit-dev libjansson-dev libuuid-dev \
             gcc-aarch64-linux-gnu g++-aarch64-linux-gnu make
 
+      - name: Cache Asterisk source
+        uses: actions/cache@v3
+        with:
+          path: asterisk-18
+          key: asterisk-18-source-${{ runner.os }}-${{ hashFiles('**/build.yml') }}
+          restore-keys: |
+            asterisk-18-source-${{ runner.os }}-
+
+      - name: Clone Asterisk 18 (LTS)
+        run: git clone -b 18 https://github.com/asterisk/asterisk asterisk-18
+
       - name: Configure for ARM64
-        run: cd asterisk-18 && ./configure --host=aarch64-linux-gnu
+        working-directory: asterisk-18
+        run: ./configure --host=aarch64-linux-gnu
 
       - name: Build ARM64
-        run: cd asterisk-18 && make -j\$(nproc)
+        working-directory: asterisk-18
+        run: make -j$(nproc)
+
+      - name: Install ARM64
+        working-directory: asterisk-18
+        run: make install DESTDIR=$PWD/install
 
       - name: Package ARM64
-        run: cd asterisk-18 && tar czf asterisk-18-arm64.tar.gz ./asterisk
+        working-directory: asterisk-18
+        run: tar czf asterisk-18-arm64.tar.gz -C install .
+
+      - name: Upload ARM64 artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: asterisk-18-arm64
+          path: asterisk-18/asterisk-18-arm64.tar.gz
 
   build-armhf:
     runs-on: ubuntu-latest
     steps:
-      - name: Clone Asterisk 18 (LTS)
-        run: git clone -b 18 https://github.com/asterisk/asterisk asterisk-18 && cd asterisk-18
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Cache APT packages
+        uses: actions/cache@v3
+        with:
+          path: /var/cache/apt
+          key: apt-cache-${{ runner.os }}-${{ hashFiles('**/build.yml') }}
+          restore-keys: |
+            apt-cache-${{ runner.os }}-
 
       - name: Install dependencies
         run: |
@@ -49,11 +89,35 @@ jobs:
             libedit-dev libjansson-dev libuuid-dev \
             gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf make
 
+      - name: Cache Asterisk source
+        uses: actions/cache@v3
+        with:
+          path: asterisk-18
+          key: asterisk-18-source-${{ runner.os }}-${{ hashFiles('**/build.yml') }}
+          restore-keys: |
+            asterisk-18-source-${{ runner.os }}-
+
+      - name: Clone Asterisk 18 (LTS)
+        run: git clone -b 18 https://github.com/asterisk/asterisk asterisk-18
+
       - name: Configure for ARMv7 (armhf)
-        run: cd asterisk-18 && ./configure --host=arm-linux-gnueabihf
+        working-directory: asterisk-18
+        run: ./configure --host=arm-linux-gnueabihf
 
       - name: Build ARMv7
-        run: cd asterisk-18 && make -j\$(nproc)
+        working-directory: asterisk-18
+        run: make -j$(nproc)
+
+      - name: Install ARMv7
+        working-directory: asterisk-18
+        run: make install DESTDIR=$PWD/install
 
       - name: Package ARMv7
-        run: cd asterisk-18 && tar czf asterisk-18-armhf.tar.gz ./asterisk
+        working-directory: asterisk-18
+        run: tar czf asterisk-18-armhf.tar.gz -C install .
+
+      - name: Upload ARMv7 artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: asterisk-18-armhf
+          path: asterisk-18/asterisk-18-armhf.tar.gz
