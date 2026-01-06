@@ -1,4 +1,4 @@
-name: Build Asterisk 18 for ARM (Final Optimized)
+name: Build Asterisk 18 for ARM (Final Fixed)
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
           sudo apt-get install -y \
             build-essential git wget curl pkg-config \
             libncurses5-dev libssl-dev libxml2-dev libsqlite3-dev \
-            libedit-dev libjansson-dev libuuid-dev \
+            libedit-dev libjansson-dev uuid-dev \
             libcurl4-openssl-dev libspeex-dev libspeexdsp-dev \
             libgsm1-dev libogg-dev libvorbis-dev libnewt-dev \
             gcc-aarch64-linux-gnu g++-aarch64-linux-gnu make
@@ -60,7 +60,7 @@ jobs:
           sudo apt-get install -y \
             build-essential git wget curl pkg-config \
             libncurses5-dev libssl-dev libxml2-dev libsqlite3-dev \
-            libedit-dev libjansson-dev libuuid-dev \
+            libedit-dev libjansson-dev uuid-dev \
             libcurl4-openssl-dev libspeex-dev libspeexdsp-dev \
             libgsm1-dev libogg-dev libvorbis-dev libnewt-dev \
             gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf make
