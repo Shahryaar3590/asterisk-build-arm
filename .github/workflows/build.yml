@@ -1,4 +1,4 @@
-name: Build Asterisk 18 for ARM (Final Fixed)
+name: Build Asterisk 18 for ARM (Docker Multiarch)
 
 on:
   push:
@@ -12,41 +12,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install dependencies
+      - name: Build ARM64 with Docker
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential git wget curl pkg-config \
-            libncurses5-dev libssl-dev libxml2-dev libsqlite3-dev \
-            libedit-dev libjansson-dev uuid-dev \
-            libcurl4-openssl-dev libspeex-dev libspeexdsp-dev \
-            libgsm1-dev libogg-dev libvorbis-dev libnewt-dev \
-            gcc-aarch64-linux-gnu g++-aarch64-linux-gnu make
-
-      - name: Clone Asterisk 18 (LTS)
-        run: git clone -b 18 https://github.com/asterisk/asterisk asterisk-18
-
-      - name: Configure for ARM64
-        working-directory: asterisk-18
-        run: ./configure --host=aarch64-linux-gnu
-
-      - name: Build ARM64
-        working-directory: asterisk-18
-        run: make -j$(nproc)
-
-      - name: Install ARM64
-        working-directory: asterisk-18
-        run: make install DESTDIR=$PWD/install
-
-      - name: Package ARM64
-        working-directory: asterisk-18
-        run: tar czf asterisk-18-arm64.tar.gz -C install .
+          docker run --rm -t \
+            -v $PWD:/src \
+            --platform linux/arm64 \
+            ubuntu:22.04 \
+            bash -c "\
+              apt-get update && \
+              DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                build-essential git wget curl pkg-config \
+                libncurses5-dev libssl-dev libxml2-dev libsqlite3-dev \
+                libedit-dev libjansson-dev uuid-dev \
+                libcurl4-openssl-dev libspeex-dev libspeexdsp-dev \
+                libgsm1-dev libogg-dev libvorbis-dev libnewt-dev \
+                gcc g++ make && \
+              cd /src && \
+              git clone -b 18 https://github.com/asterisk/asterisk asterisk-18 && \
+              cd asterisk-18 && \
+              ./configure && \
+              make -j\$(nproc) && \
+              make install DESTDIR=/src/asterisk-18-arm64/install && \
+              tar czf /src/asterisk-18-arm64.tar.gz -C /src/asterisk-18-arm64/install . \
+            "
 
       - name: Upload ARM64 artifact
         uses: actions/upload-artifact@v4
         with:
           name: asterisk-18-arm64
-          path: asterisk-18/asterisk-18-arm64.tar.gz
+          path: asterisk-18-arm64.tar.gz
 
   build-armhf:
     runs-on: ubuntu-latest
@@ -54,38 +48,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install dependencies
+      - name: Build ARMv7 (armhf) with Docker
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential git wget curl pkg-config \
-            libncurses5-dev libssl-dev libxml2-dev libsqlite3-dev \
-            libedit-dev libjansson-dev uuid-dev \
-            libcurl4-openssl-dev libspeex-dev libspeexdsp-dev \
-            libgsm1-dev libogg-dev libvorbis-dev libnewt-dev \
-            gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf make
-
-      - name: Clone Asterisk 18 (LTS)
-        run: git clone -b 18 https://github.com/asterisk/asterisk asterisk-18
-
-      - name: Configure for ARMv7 (armhf)
-        working-directory: asterisk-18
-        run: ./configure --host=arm-linux-gnueabihf
-
-      - name: Build ARMv7
-        working-directory: asterisk-18
-        run: make -j$(nproc)
-
-      - name: Install ARMv7
-        working-directory: asterisk-18
-        run: make install DESTDIR=$PWD/install
-
-      - name: Package ARMv7
-        working-directory: asterisk-18
-        run: tar czf asterisk-18-armhf.tar.gz -C install .
+          docker run --rm -t \
+            -v $PWD:/src \
+            --platform linux/arm/v7 \
+            ubuntu:22.04 \
+            bash -c "\
+              apt-get update && \
+              DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                build-essential git wget curl pkg-config \
+                libncurses5-dev libssl-dev libxml2-dev libsqlite3-dev \
+                libedit-dev libjansson-dev uuid-dev \
+                libcurl4-openssl-dev libspeex-dev libspeexdsp-dev \
+                libgsm1-dev libogg-dev libvorbis-dev libnewt-dev \
+                gcc g++ make && \
+              cd /src && \
+              git clone -b 18 https://github.com/asterisk/asterisk asterisk-18 && \
+              cd asterisk-18 && \
+              ./configure && \
+              make -j\$(nproc) && \
+              make install DESTDIR=/src/asterisk-18-armhf/install && \
+              tar czf /src/asterisk-18-armhf.tar.gz -C /src/asterisk-18-armhf/install . \
+            "
 
       - name: Upload ARMv7 artifact
         uses: actions/upload-artifact@v4
         with:
           name: asterisk-18-armhf
-          path: asterisk-18/asterisk-18-armhf.tar.gz
+          path: asterisk-18-armhf.tar.gz
