@@ -1,0 +1,46 @@
+name: Build Asterisk 18 ARM64 (Termux Optimized)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-arm64-termux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Build ARM64 static (Termux-friendly)
+        run: |
+          docker run --rm -t \
+            -v $PWD:/src \
+            --platform linux/arm64 \
+            ubuntu:22.04 \
+            bash -c "\
+              apt-get update && \
+              DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                build-essential git wget curl pkg-config \
+                libncurses5-dev libssl-dev libxml2-dev libsqlite3-dev \
+                libedit-dev libjansson-dev uuid-dev \
+                libcurl4-openssl-dev libspeex-dev libspeexdsp-dev \
+                libgsm1-dev libogg-dev libvorbis-dev libnewt-dev \
+                gcc g++ make && \
+              cd /src && \
+              git clone -b 18 https://github.com/asterisk/asterisk asterisk-18-termux && \
+              cd asterisk-18-termux && \
+              ./configure --enable-static --disable-shared --without-pjproject-bundled && \
+              make -j\$(nproc) && \
+              make install DESTDIR=/src/asterisk-18-arm64-termux/install && \
+              tar czf /src/asterisk-18-arm64-termux.tar.gz -C /src/asterisk-18-arm64-termux/install . \
+            "
+
+      - name: Upload ARM64 Termux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: asterisk-18-arm64-termux
+          path: asterisk-18-arm64-termux.tar.gz
